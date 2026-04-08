@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Katarot</title>
+
+<style>
+@font-face {
+  font-family: 'Fidalga';
+    src: url('fidalga.ttf');
+    }
+
+    body {
+      margin: 0;
+        font-family: 'Fidalga', serif;
+          background: radial-gradient(circle at top, #3a0066, #0d001a);
+            color: white;
+              overflow: hidden;
+                text-align: center;
+                }
+
+                .particle {
+                  position: fixed;
+                    width: 4px;
+                      height: 4px;
+                        background: #c084fc;
+                          border-radius: 50%;
+                            opacity: 0.6;
+                              animation: subir linear infinite;
+                              }
+
+                              @keyframes subir {
+                                from { transform: translateY(100vh); }
+                                  to { transform: translateY(-10vh); }
+                                  }
+
+                                  h1 {
+                                    margin-top: 30px;
+                                      font-size: 52px;
+                                        text-shadow: 0 0 20px #a855f7;
+                                        }
+
+                                        button {
+                                          padding: 14px 30px;
+                                            border: none;
+                                              border-radius: 25px;
+                                                background: linear-gradient(45deg, #7b2ff7, #f107a3);
+                                                  color: white;
+                                                    cursor: pointer;
+                                                    }
+
+                                                    .cartas {
+                                                      display: flex;
+                                                        justify-content: center;
+                                                          gap: 25px;
+                                                            margin-top: 50px;
+                                                            }
+
+                                                            .carta {
+                                                              width: 160px;
+                                                                height: 240px;
+                                                                  perspective: 1000px;
+                                                                    cursor: pointer;
+                                                                    }
+
+                                                                    .inner {
+                                                                      width: 100%;
+                                                                        height: 100%;
+                                                                          transition: transform 0.8s;
+                                                                            transform-style: preserve-3d;
+                                                                              position: relative;
+                                                                              }
+
+                                                                              .carta.virada .inner {
+                                                                                transform: rotateY(180deg);
+                                                                                }
+
+                                                                                .frente, .verso {
+                                                                                  position: absolute;
+                                                                                    width: 100%;
+                                                                                      height: 100%;
+                                                                                        border-radius: 15px;
+                                                                                          backface-visibility: hidden;
+                                                                                            background-size: cover;
+                                                                                            }
+
+                                                                                            .frente {
+                                                                                              background-image: url('IMAGEM_VERSO.png');
+                                                                                              }
+
+                                                                                              .verso {
+                                                                                                transform: rotateY(180deg);
+                                                                                                }
+
+                                                                                                .ia {
+                                                                                                  margin-top: 40px;
+                                                                                                    padding: 20px;
+                                                                                                    }
+                                                                                                    </style>
+                                                                                                    </head>
+
+                                                                                                    <body>
+
+                                                                                                    <h1>KATAROT</h1>
+                                                                                                    <button onclick="gerar()">Revelar Destino</button>
+
+                                                                                                    <div id="cartas" class="cartas"></div>
+                                                                                                    <div id="ia" class="ia"></div>
+
+                                                                                                    <script>
+                                                                                                    // partículas
+                                                                                                    for (let i = 0; i < 40; i++) {
+                                                                                                      let p = document.createElement("div");
+                                                                                                        p.className = "particle";
+                                                                                                          p.style.left = Math.random() * 100 + "vw";
+                                                                                                            p.style.animationDuration = (5 + Math.random() * 10) + "s";
+                                                                                                              document.body.appendChild(p);
+                                                                                                              }
+
+                                                                                                              const lista = [
+                                                                                                                "IMAGEM_Estrela.png",
+                                                                                                                  "IMAGEM_Mago.png",
+                                                                                                                    "IMAGEM_Torre.png",
+                                                                                                                      "IMAGEM_Lua.png",
+                                                                                                                        "IMAGEM_Sol.png"
+                                                                                                                        ];
+
+                                                                                                                        function gerar() {
+                                                                                                                          const container = document.getElementById("cartas");
+                                                                                                                            const ia = document.getElementById("ia");
+
+                                                                                                                              container.innerHTML = "";
+                                                                                                                                ia.innerText = "Consultando o universo...";
+
+                                                                                                                                  let leitura = [];
+
+                                                                                                                                    for (let i = 0; i < 3; i++) {
+                                                                                                                                        const img = lista[Math.floor(Math.random() * lista.length)];
+                                                                                                                                            leitura.push(img);
+
+                                                                                                                                                const carta = document.createElement("div");
+                                                                                                                                                    carta.className = "carta";
+
+                                                                                                                                                        carta.innerHTML = `
+                                                                                                                                                              <div class="inner">
+                                                                                                                                                                      <div class="frente"></div>
+                                                                                                                                                                              <div class="verso" style="background-image:url('${img}')"></div>
+                                                                                                                                                                                    </div>
+                                                                                                                                                                                        `;
+
+                                                                                                                                                                                            carta.onclick = () => carta.classList.toggle("virada");
+                                                                                                                                                                                                container.appendChild(carta);
+                                                                                                                                                                                                  }
+
+                                                                                                                                                                                                    interpretar(leitura).then(res => {
+                                                                                                                                                                                                        ia.innerText = res;
+                                                                                                                                                                                                          });
+                                                                                                                                                                                                          }
+
+                                                                                                                                                                                                          // 🔮 CHAMA BACKEND
+                                                                                                                                                                                                          async function interpretar(cartas) {
+                                                                                                                                                                                                            const res = await fetch("http://localhost:3000/ia", {
+                                                                                                                                                                                                                method: "POST",
+                                                                                                                                                                                                                    headers: {
+                                                                                                                                                                                                                          "Content-Type": "application/json"
+                                                                                                                                                                                                                              },
+                                                                                                                                                                                                                                  body: JSON.stringify({ cartas })
+                                                                                                                                                                                                                                    });
+
+                                                                                                                                                                                                                                      const data = await res.json();
+                                                                                                                                                                                                                                        return data.texto;
+                                                                                                                                                                                                                                        }
+                                                                                                                                                                                                                                        </script>
+
+                                                                                                                                                                                                                                        </body>
+                                                                                                                                                                                                                                        </html>
